@@ -29,6 +29,11 @@ local_settings.py
 .env
 .env.local
 
+# Environment
+venv/
+ENV/
+env/
+
 # IDEs
 .vscode/
 .idea/
@@ -49,3 +54,8 @@ yarn.lock
 *.db
 *.sqlite
 *.sqlite3
+
+# Python cache
+__pycache__/
+*.py[cod]
+*$py.class
