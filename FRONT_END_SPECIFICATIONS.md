@@ -86,8 +86,8 @@ L'application permettra aux agents de chaque service municipal de saisir leurs d
 - Chevaux fiscaux
 
 **Consommations annuelles** :
-- Essence (ES) en litres → Impact : 2.28 kg CO2/L
-- Gasoil (GO) en litres → Impact : 2.67 kg CO2/L
+- Essence (ES) en litres → Impact : **2.79 kg CO₂e/L** (ADEME Base Carbone)
+- Gasoil (GO) en litres → Impact : **3.16 kg CO₂e/L** (ADEME Base Carbone)
 - Distance parcourue annuellement (km)
 
 #### Interface suggérée :
@@ -501,24 +501,163 @@ L'application permettra aux agents de chaque service municipal de saisir leurs d
 
 ---
 
-## 🛠️ Stack Technique Recommandée
+## 🛠️ Stack Technique - Django Full-Stack
+
+### Architecture retenue : **Django Full-Stack** ✅
+
+**Décision** : Application monolithique Django avec templates intégrés, adaptée au contexte municipal et aux principes d'éco-conception.
+
+### Backend
+
+- **Python** : 3.11+ (LTS)
+- **Framework** : Django 5.0+
+  - Django Admin : Interface d'administration complète
+  - Django Auth : Système d'authentification intégré
+  - Django Forms : Validation et génération de formulaires
+  - Django ORM : Gestion base de données
+- **Base de données** : PostgreSQL 15+
+- **Serveur de développement** : Django runserver
+- **Serveur de production** : Gunicorn + Nginx
 
 ### Frontend
-- **HTML5** : Structure sémantique
-- **CSS3 Vanilla** : Styling minimaliste + CSS Grid/Flexbox
-- **JavaScript ES6+** : Interactivité, validation, calculs
-- **Optionnel** : Alpine.js (très léger, 15kb) ou Vue.js minimal
 
-### Backend (rappel des specs)
-- **Python 3.11+**
-- **Framework** : FastAPI (performant, moderne) ou Django (batteries included)
-- **Base de données** : PostgreSQL
-- **ORM** : SQLAlchemy (FastAPI) ou Django ORM
+- **Templates** : Django Templates
+  - Syntaxe : `{% %}` pour logique, `{{ }}` pour variables
+  - Héritage de templates (`{% extends %}`, `{% block %}`)
+  - Filtres et tags personnalisés
+- **CSS** : Vanilla CSS avec variables CSS
+  - Pas de preprocesseur (Sass/Less)
+  - Design system avec variables CSS (`:root`)
+  - Mobile-first responsive
+- **JavaScript** : Vanilla ES6+ (minimal)
+  - Calculs temps réel côté client
+  - Validation formulaires
+  - Interactions légères
+  - **Pas de framework JS** (React/Vue/Angular)
+- **Icons** : SVG inline (pas de font-icons)
 
-### Outils Dev
-- **Vite** : Build tool rapide (si besoin)
-- **ESLint** : Qualité code JS
-- **Prettier** : Formatage automatique
+### Base de données
+
+```python
+# PostgreSQL configuration
+DATABASES = {
+    'default': {
+        'ENGINE': 'django.db.backends.postgresql',
+        'NAME': 'evry_bilan_carbone',
+        'USER': 'evry_user',
+        'PASSWORD': '***',
+        'HOST': 'localhost',
+        'PORT': '5432',
+    }
+}
+```
+
+### Outils de développement
+
+- **Gestion de paquets** : pip + requirements.txt
+- **Environnement virtuel** : venv (Python natif)
+- **Linter Python** : Ruff (rapide et moderne)
+- **Formatter** : Black
+- **Tests** : pytest + pytest-django
+- **Migration BD** : Django migrations (intégré)
+- **Fichiers statiques** : Django collectstatic
+
+### Structure du projet
+
+```
+webapp/
+├── manage.py                    # Script Django principal
+├── requirements.txt             # Dépendances Python
+├── .env                         # Variables d'environnement (git-ignored)
+├── config/                      # Configuration Django
+│   ├── __init__.py
+│   ├── settings.py             # Settings principal
+│   ├── urls.py                 # Routes principales
+│   └── wsgi.py                 # WSGI pour production
+├── apps/                        # Applications Django
+│   ├── core/                   # App principale (auth, base)
+│   │   ├── models.py
+│   │   ├── views.py
+│   │   ├── forms.py
+│   │   ├── admin.py
+│   │   └── templates/
+│   │       └── core/
+│   │           ├── base.html
+│   │           ├── dashboard.html
+│   │           └── login.html
+│   ├── vehicles/               # Module véhicules
+│   │   ├── models.py          # VehicleData, EmissionFactor
+│   │   ├── views.py           # Vue formulaire, calculs
+│   │   ├── forms.py           # Formulaires Django
+│   │   ├── urls.py            # Routes du module
+│   │   └── templates/
+│   │       └── vehicles/
+│   │           ├── form.html
+│   │           └── list.html
+│   ├── buildings/              # Module bâtiments (futur)
+│   ├── alimentation/           # Module alimentation (futur)
+│   └── achats/                 # Module achats (futur)
+├── static/                      # Fichiers statiques
+│   ├── css/
+│   │   ├── base.css           # Styles de base
+│   │   ├── components.css     # Composants réutilisables
+│   │   └── modules/
+│   │       └── vehicles.css
+│   ├── js/
+│   │   ├── main.js
+│   │   └── vehicle-calculator.js
+│   └── img/
+│       └── (images optimisées)
+└── templates/                   # Templates globaux
+    └── base.html               # Template de base
+```
+
+### Avantages de cette stack
+
+1. **Simplicité** : Un seul langage (Python), une seule stack
+2. **Intégré** : Admin, auth, ORM inclus
+3. **Mature** : Django = standard pour admin publique en France
+4. **Sécurisé** : Protection CSRF, XSS, SQL injection par défaut
+5. **Éco-responsable** : Pas de build step, pas de dépendances npm
+6. **Maintenable** : Code lisible, documentation abondante en français
+
+### Dépendances principales
+
+```txt
+# requirements.txt
+Django==5.0.1
+psycopg2-binary==2.9.9      # Driver PostgreSQL
+python-decouple==3.8        # Variables d'environnement
+django-environ==0.11.2      # Config ENV
+gunicorn==21.2.0            # Serveur production
+whitenoise==6.6.0           # Serveur fichiers statiques
+```
+
+### Commandes de développement
+
+```bash
+# Créer projet
+django-admin startproject config .
+
+# Créer app
+python manage.py startapp vehicles
+
+# Migrations
+python manage.py makemigrations
+python manage.py migrate
+
+# Créer superuser
+python manage.py createsuperuser
+
+# Lancer serveur dev
+python manage.py runserver
+
+# Collecter fichiers statiques
+python manage.py collectstatic
+
+# Tests
+pytest
+```
 
 ---
 
@@ -694,15 +833,26 @@ Objectifs à respecter :
 
 ### Données de référence (facteurs d'émission)
 Ces valeurs doivent être stockées en base de données et configurables :
-- Électricité : **0.052 kg CO2/kWh**
-- Gaz naturel : **0.24 kg CO2/kWh**
-- Chaleur réseau : **0.146 kg CO2/kWh**
-- Essence : **2.28 kg CO2/L**
-- Gasoil : **2.67 kg CO2/L**
-- Repas végétarien : **0.51 kg CO2/repas**
-- Repas poulet/poisson : **1.5 kg CO2/repas**
-- Repas bœuf : **7.26 kg CO2/repas**
-- Repas porc : **~2 kg CO2/repas**
+
+**Énergies** :
+- Électricité : **0.052 kg CO₂/kWh**
+- Gaz naturel : **0.24 kg CO₂/kWh**
+- Chaleur réseau : **0.146 kg CO₂/kWh**
+
+**Carburants** (ADEME Base Carbone - Combustion + Amont) :
+- Essence (SP95-98) : **2.79 kg CO₂e/L** ✅ Valeur officielle vérifiée
+- Gazole routier : **3.16 kg CO₂e/L** ✅ Valeur officielle vérifiée
+
+**Alimentation** :
+- Repas végétarien : **0.51 kg CO₂/repas**
+- Repas poulet/poisson : **1.5 kg CO₂/repas**
+- Repas bœuf : **7.26 kg CO₂/repas**
+- Repas porc : **~2 kg CO₂/repas**
+
+> ⚠️ **Note importante** : Les valeurs carburants incluent la combustion ET l'amont (extraction, raffinage, transport). Elles sont ~20% plus élevées que les valeurs "combustion seule" pour un bilan carbone complet et conforme (Scope 1+3).
+> 
+> 📄 **Source** : Base Carbone® ADEME - Vérifiée le 16/01/2026  
+> 🔗 **Référence** : Voir `ADEME_VERIFIED_VALUES.md` pour la méthodologie de vérification
 
 ### Accessibilité
 - ARIA labels pour les lecteurs d'écran
