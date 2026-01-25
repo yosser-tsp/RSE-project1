@@ -1,0 +1,104 @@
+﻿{% extends 'base.html' %}
+
+{% block content %}
+<div class="container" style="padding: 20px;">
+    <h2 class="dashboard-title">Volet Numerique</h2>
+
+    <div class="form-container" style="background: #fdfdfd; border: 1px solid #ddd; padding: 25px; border-radius: 10px; margin-bottom: 30px; box-shadow: 0 2px 10px rgba(0,0,0,0.05);">
+        <form method="post" style="display: flex; align-items: flex-end; gap: 15px; flex-wrap: wrap;">
+            {% csrf_token %}
+            <div style="flex: 1; min-width: 200px;">
+                <label style="display: block; margin-bottom: 5px; font-weight: bold;">Type d equipement :</label>
+                {{ form.type_equipement }}
+            </div>
+            <div style="flex: 1; min-width: 200px;">
+                <label style="display: block; margin-bottom: 5px; font-weight: bold;">Nom / Emplacement :</label>
+                {{ form.nom }}
+            </div>
+            <div style="width: 80px;">
+                <label style="display: block; margin-bottom: 5px; font-weight: bold;">Qte :</label>
+                {{ form.quantite }}
+            </div>
+            <div style="width: 100px;">
+                <label style="display: block; margin-bottom: 5px; font-weight: bold;">Duree (an) :</label>
+                {{ form.duree_vie }}
+            </div>
+            <button type="submit" class="btn" style="background: #28a745; color: white; padding: 12px 30px; border: none; border-radius: 5px; cursor: pointer; font-weight: bold;">AJOUTER</button>
+        </form>
+    </div>
+
+    <div class="table-container" style="background: white; border-radius: 10px; overflow: hidden; border: 1px solid #003366;">
+        <h3 style="background: #003366; color: white; margin: 0; padding: 15px;">Tableau d inventaire detaille</h3>
+        <table style="width: 100%; border-collapse: collapse;">
+            <thead>
+                <tr style="background: #f1f1f1;">
+                    <th style="padding: 12px; border: 1px solid #ddd;">Materiel</th>
+                    <th style="padding: 12px; border: 1px solid #ddd;">Quantite</th>
+                    <th style="padding: 12px; border: 1px solid #ddd;">Fabrication (kg CO2e)</th>
+                    <th style="padding: 12px; border: 1px solid #ddd;">Conso (kWh/an)</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for eq in equipements %}
+                <tr>
+                    <td style="padding: 12px; border: 1px solid #ddd;">{{ eq.get_type_equipement_display }} ({{ eq.nom }})</td>
+                    <td style="padding: 12px; border: 1px solid #ddd; text-align: center;">{{ eq.quantite }}</td>
+                    <td style="padding: 12px; border: 1px solid #ddd; text-align: center;">{{ eq.empreinte_fabrication }} kg</td>
+                    <td style="padding: 12px; border: 1px solid #ddd; text-align: center;">{{ eq.consommation_annuelle }} kWh</td>
+                </tr>
+                {% empty %}
+                <tr>
+                    <td colspan="4" style="padding: 20px; text-align: center; color: #888;">Aucun materiel ajoute pour le moment.</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+
+    <div style="margin-top: 40px; display: flex; gap: 20px;">
+        <div style="flex: 1; background: #fff; border-top: 5px solid #d00000; padding: 20px; text-align: center; box-shadow: 0 4px 6px rgba(0,0,0,0.1);">
+            <p style="text-transform: uppercase; color: #666; font-size: 0.8rem;">Carbone Total (Fabrication)</p>
+            <h2 style="color: #d00000; margin: 5px 0;">{{ total_carbone }} kg CO2e</h2>
+        </div>
+        <div style="flex: 1; background: #fff; border-top: 5px solid #ffb703; padding: 20px; text-align: center; box-shadow: 0 4px 6px rgba(0,0,0,0.1);">
+            <p style="text-transform: uppercase; color: #666; font-size: 0.8rem;">Consommation Energetique</p>
+            <h2 style="color: #ffb703; margin: 5px 0;">{{ total_conso }} kWh/an</h2>
+        </div>
+    </div>
+
+    <div style="margin-top: 40px; display: flex; gap: 20px; flex-wrap: wrap;">
+        <div style="flex: 1; min-width: 300px; background: #fff; padding: 20px; border-radius: 10px; box-shadow: 0 4px 6px rgba(0,0,0,0.1);">
+            <h3 style="margin: 0 0 15px 0; color: #003366; font-size: 1rem;">Repartition Carbone par Equipement</h3>
+            <canvas id="chartCarbone" height="200"></canvas>
+        </div>
+        <div style="flex: 1; min-width: 300px; background: #fff; padding: 20px; border-radius: 10px; box-shadow: 0 4px 6px rgba(0,0,0,0.1);">
+            <h3 style="margin: 0 0 15px 0; color: #003366; font-size: 1rem;">Repartition Consommation par Equipement</h3>
+            <canvas id="chartConso" height="200"></canvas>
+        </div>
+    </div>
+
+    <div style="text-align: center; margin-top: 40px;">
+        <a href="{% url 'dashboard' %}" class="btn" style="background: #003366; color: white; padding: 15px 40px; text-decoration: none; border-radius: 5px; font-weight: bold;">VALIDER LE VOLET ET RETOURNER AU BILAN GLOBAL</a>
+    </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+<script>
+    const labels = {{ chart_labels|safe }};
+    const fabData = {{ chart_fab_data|safe }};
+    const consoData = {{ chart_conso_data|safe }};
+    const colors = ['#2d6a4f', '#40916c', '#52b788', '#74c69d', '#95d5b2', '#b7e4c7', '#d8f3dc', '#1b4332', '#081c15', '#a3b18a'];
+    if (labels.length > 0) {
+        new Chart(document.getElementById('chartCarbone'), {
+            type: 'bar',
+            data: { labels: labels, datasets: [{ label: 'kg CO2e', data: fabData, backgroundColor: colors.slice(0, labels.length), borderRadius: 5 }] },
+            options: { indexAxis: 'y', responsive: true, plugins: { legend: { display: false } }, scales: { x: { beginAtZero: true } } }
+        });
+        new Chart(document.getElementById('chartConso'), {
+            type: 'bar',
+            data: { labels: labels, datasets: [{ label: 'kWh/an', data: consoData, backgroundColor: '#ffb703', borderRadius: 5 }] },
+            options: { indexAxis: 'y', responsive: true, plugins: { legend: { display: false } }, scales: { x: { beginAtZero: true } } }
+        });
+    }
+</script>
+{% endblock %}

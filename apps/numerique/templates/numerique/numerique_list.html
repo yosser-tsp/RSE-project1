@@ -1,0 +1,103 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Liste Numérique - Bilan Carbone{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="dashboard-welcome">
+        <h2 class="dashboard-title">💻 Inventaire Numérique</h2>
+        <p class="dashboard-subtitle">Liste des équipements informatiques enregistrés</p>
+    </div>
+
+    <div class="table-container">
+        <div class="table-actions">
+            <a href="{% url 'numerique:numerique_form' %}" class="btn btn--primary">➕ Ajouter un équipement</a>
+            <a href="{% url 'dashboard' %}" class="btn btn--secondary">🏠 Retour Dashboard</a>
+        </div>
+
+        <table class="carbon-table">
+            <thead>
+                <tr>
+                    <th>Nom</th>
+                    <th>Type</th>
+                    <th>Quantité</th>
+                    <th>Date d'acquisition</th>
+                    <th>Consommation (kWh/an)</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for equipement in equipements %}
+                <tr>
+                    <td><strong>{{ equipement.nom }}</strong></td>
+                    <td>{{ equipement.get_type_equipement_display }}</td>
+                    <td>{{ equipement.quantite }}</td>
+                    <td>{{ equipement.date_acquisition|date:"d/m/Y" }}</td>
+                    <td>{{ equipement.consommation_estimee }}</td>
+                </tr>
+                {% empty %}
+                <tr>
+                    <td colspan="5" style="text-align: center; padding: 2rem; color: #6c757d;">
+                        Aucun équipement numérique enregistré pour le moment.
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_css %}
+<style>
+    .table-container {
+        background: white;
+        padding: 1.5rem;
+        border-radius: 8px;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        border: 1px solid #dee2e6;
+    }
+
+    .table-actions {
+        display: flex;
+        gap: 1rem;
+        margin-bottom: 1.5rem;
+    }
+
+    .carbon-table {
+        width: 100%;
+        border-collapse: collapse;
+        margin-top: 1rem;
+    }
+
+    .carbon-table th {
+        background-color: #f8f9fa;
+        color: #2d6a4f;
+        text-align: left;
+        padding: 1rem;
+        border-bottom: 2px solid #2d6a4f;
+    }
+
+    .carbon-table td {
+        padding: 1rem;
+        border-bottom: 1px solid #eee;
+        color: #212529;
+    }
+
+    .carbon-table tr:hover {
+        background-color: #f1f8f5;
+    }
+
+    .btn {
+        padding: 0.6rem 1.2rem;
+        text-decoration: none;
+        border-radius: 4px;
+        font-weight: 600;
+        font-size: 0.9rem;
+        display: inline-block;
+    }
+
+    .btn--primary { background: #2d6a4f; color: white; border: 1px solid #2d6a4f; }
+    .btn--secondary { background: white; color: #2d6a4f; border: 1px solid #2d6a4f; }
+</style>
+{% endblock %}
